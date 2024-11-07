@@ -12,7 +12,7 @@ const logger= (req,res,next) =>{
     )
     next();
 }
-app.user(logger);
+app.use(logger);
 
 
 const connection = mysql.createConnection({
