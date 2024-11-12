@@ -1,0 +1,90 @@
+//instantiation
+const express = require("express")
+const app=express()
+const mysql= require("mysql")
+const moment=require("moment")
+const PORT = process.env. PORT || 5000
+
+
+const logger= (req,res,next) =>{
+    console.log(
+        `${req.protocol}://${req.get("host")}${req.originalUrl} : ${moment().format()}`
+    )
+    next();
+}
+app.use(logger);
+
+
+const connection = mysql.createConnection({
+    host: "bezrn2uiosz2eapavcnq-mysql.services.clever-cloud.com",
+    user: "uot2iyfw3cel6k1g",
+    password: "mkjRDpQdiY7M6WHTPKIJ",
+    database: "bezrn2uiosz2eapavcnq",
+});
+
+connection.connect();
+//REPORT-CRUD
+app.get("/api/members", (req,res) =>{
+    connection.query("SELECT * FROM userdata",(err,rows,fields) =>{
+        if(err) throw err;
+        res.json(rows)
+    })
+})
+
+//REPORT-CRUD SEARCH
+app.get("/api/members/:id", (req,res) =>{
+    const id=req.params.id
+    //res.send(id)
+    connection.query(`SELECT * FROM userdata WHERE id=${id}`, (err,rows, fields)=>{
+        if(err) throw err
+        if(rows.lenght > 0){
+        res.json(rows)
+        }else{
+            res.status(400).json({msg:`${id} id not found`})
+        }
+    })
+})
+
+//POST
+//CREATE - CRUD
+app.use(express.urlencoded({extended:false}))
+app.post("/api/members", (req, res) =>{
+    const supplier = req.body.supplier; 
+    const itemName = req.body.itemName; 
+    const unitPrice = req.body.unitPrice; 
+    const Quantity =req.body.Quantity; 
+    connection.query(`INSERT INTO userdata (itemName, unitPrice, Quanity, supplier) VALUES ('${itemName}','${unitPrice}','${Quantity}','${supplier}')`,
+        (err,rows,fields)=>{
+            if(err) throw err;
+            res.json({msg: `Succesfully insert`})
+        }
+    )
+})
+
+app.use(express.urlencoded({extended:false}))
+app.put("/api/members",(req,res) =>{S
+    const itemName = req.body.itemName; 
+    const unitPrice = req.body.unitPrice; 
+    const Quantity = req.body.Quantity; 
+    const supplier =req.body.supplier;
+    const id=req.body.id;
+    connection.query(`UPDATE userdata SET itemnName='${itemName}', unitPrice='${unitPrice}',Quantity='${Quantity}',supplier='${supplier}' WHERE id='${id}'`,(err,rows,fields)=>{
+        if(err) throw err
+        res.json({msg: `Successfully Updated!`})
+    })
+})
+
+
+//DELETE
+app.use(express.urlencoded({extended:false}))
+app.delete("/api/members",(req,res) =>{
+    const id=req.body.id;
+    HTMLFormControlsCollection.query(`DELETE FROM userdata WHERE id='${id}'`),(err,rows,fields)=>{
+        if(err) throw err;
+        res.json({msg: `Succesfully Deleted`})
+    }
+})
+
+app.listen(5000, () => {
+    console.log(`Server is running in port ${PORT}`)
+})
