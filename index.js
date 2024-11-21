@@ -1,90 +1,195 @@
-//instantiation
-const express = require("express")
-const app=express()
-const mysql= require("mysql")
-const moment=require("moment")
-const PORT = process.env. PORT || 5000
+const content=document.querySelector("#content")
 
 
-const logger= (req,res,next) =>{
-    console.log(
-        `${req.protocol}://${req.get("host")}${req.originalUrl} : ${moment().format()}`
-    )
-    next();
-}
-app.use(logger);
-app.use(cors());
-app.use(express.json());
-const connection = mysql.createConnection({
-    host: "bezrn2uiosz2eapavcnq-mysql.services.clever-cloud.com",
-    user: "uot2iyfw3cel6k1g",
-    password: "mkjRDpQdiY7M6WHTPKIJ",
-    database: "bezrn2uiosz2eapavcnq",
+
+const submit=document.querySelector("#submit")
+
+
+
+
+
+window.addEventListener("load", () => {
+
+
+
+
+
+    getUsers();
+
+
+
+
+
+})
+
+
+
+
+
+submit.addEventListener('click', () =>{
+
+
+
+    let fname=document.querySelector('#fname').value
+
+
+
+    let lname=document.querySelector('#lname').value
+
+
+
+    let email=document.querySelector('#email').value
+
+
+
+    let gender=document.querySelector('#gender').value
+
+
+
+
+
+    //object
+
+
+
+    //{'fname': fname, 'lname': delacruz}
+
+
+
+    let formData={fname,lname,email,gender}
+
+
+
+
+
+    fetch("https://bscs2b-api-crud-d1j4.onrender.com/api/members", {
+
+
+
+        method: "POST",
+
+
+
+        body: JSON.stringify(formData),
+
+
+
+        headers:{
+
+
+
+            "Content-Type":"application/json"
+
+
+
+        }
+
+
+
+
+
+    }).catch((error)=> console.log(error))
+
+
+
+    alert("Successfully inserted!")
+
+
+
+    location.reload()
+
+
+
 });
 
-connection.connect();
-//REPORT-CRUD
-app.get("/api/members", (req,res) =>{
-    connection.query("SELECT * FROM userdata",(err,rows,fields) =>{
-        if(err) throw err;
-        res.json(rows)
-    })
+
+
+
+
+window.addEventListener("load", ()=>{
+
+
+
+    getUsers();
+
+
+
 })
 
-//REPORT-CRUD SEARCH
-app.get("/api/members/:id", (req,res) =>{
-    const id=req.params.id
-    //res.send(id)
-    connection.query(`SELECT * FROM userdata WHERE id=${id}`, (err,rows, fields)=>{
-        if(err) throw err
-        if(rows.lenght > 0){
-        res.json(rows)
-        }else{
-            res.status(400).json({msg:`${id} id not found`})
+
+
+function getUsers(){
+
+    let html = ""
+
+
+
+    //fetch("http://localhost:5001/api/members", {mode:"cors"})
+
+
+
+    fetch("https://bscs2b-api-crud-d1j4.onrender.com/api/members", {mode:"cors"})
+
+
+
+    .then((response) => {
+
+
+
+    console.log(response)
+
+
+
+    return response.json()
+
+    })
+
+
+
+
+    .then((data) => {
+
+        data.forEach((element) => {
+
+            html += `<li> ${(element.first_name)} ${(element.last_name)} <a href="javascript:void(0)" onClick="deleteMember(${element.id})"> DELETE</a> </li>`
+
+        })
+
+        content.innerHTML = html
+
+    })
+
+
+
+    .catch((error) => {
+
+      console.log(error)
+
+    })
+
+}
+
+
+
+function deleteMember(id){
+
+    fetch('https://bscs2b-api-crud-d1j4.onrender.com/api/members',{
+
+        method:'DELETE',
+
+        body: JSON.stringify(formData),
+
+        headers:{
+
+            'Content-Type': 'application/json'
+
         }
+
     })
-})
+    .then(response => response.text())
 
-//POST
-//CREATE - CRUD
-app.use(express.urlencoded({extended:false}))
-app.post("/api/members", (req, res) =>{
-    const fname = req.body.fname; //Juan
-    const lname = req.body.lname; //DelaCruz
-    const email = req.body.email; //juan@gmail.com
-    const gender =req.body.gender; //male
-    connection.query(`INSERT INTO userdata (first_name, last_name, email, gender) VALUES ('${fname}','${lname}','${email}','${gender}')`,
-        (err,rows,fields)=>{
-            if(err) throw err;
-            res.json({msg: `Succesfully insert`})
-        }
-    )
-})
+    .then(response=>console.log(response))
 
-app.use(express.urlencoded({extended:false}))
-app.put("/api/members",(req,res) =>{S
-    const fname = req.body.fname; //Juan
-    const lname = req.body.lname; //DelaCruz
-    const email = req.body.email; //juan@gmail.com
-    const gender =req.body.gender; //male
-    const id=req.body.id;
-    connection.query(`UPDATE userdata SET first_name='${fname}', lastname='${lname}',email='${email}',gender='${gender}' WHERE id='${id}'`,(err,rows,fields)=>{
-        if(err) throw err
-        res.json({msg: `Successfully Updated!`})
-    })
-})
+    .catch(error=>console.log(error))
 
-
-//DELETE
-app.use(express.urlencoded({extended:false}))
-app.delete("/api/members",(req,res) =>{
-    const id=req.body.id;
-    HTMLFormControlsCollection.query(`DELETE FROM userdata WHERE id='${id}'`),(err,rows,fields)=>{
-        if(err) throw err;
-        res.json({msg: `Succesfully Deleted`})
-    }
-})
-
-app.listen(5000, () => {
-    console.log(`Server is running in port ${PORT}`)
-})
+}
